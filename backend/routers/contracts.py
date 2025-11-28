@@ -11,25 +11,30 @@ router = APIRouter(
 
 @router.post("/", response_model=schemas.Contract)
 def create_contract(contract: schemas.ContractCreate, db: Session = Depends(database.get_db)):
-    db_contract = models.Contract(name=contract.name)
+    # Verify project exists
+    project = db.query(models.Project).filter(models.Project.id == contract.project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    db_contract = models.Contract(name=contract.name, project_id=contract.project_id)
     db.add(db_contract)
     db.commit()
     db.refresh(db_contract)
-
-    # Log creation
+    
+    # Log operation
     log = models.OperationLog(
         contract_id=db_contract.id,
         action="create_contract",
-        details=f"Created contract: {contract.name}"
+        details=f"Created contract '{contract.name}' in project {contract.project_id}"
     )
     db.add(log)
     db.commit()
-
+    
     return db_contract
 
 @router.get("/", response_model=List[schemas.Contract])
-def read_contracts(skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
-    contracts = db.query(models.Contract).options(joinedload(models.Contract.versions)).offset(skip).limit(limit).all()
+def read_contracts(project_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(database.get_db)):
+    contracts = db.query(models.Contract).filter(models.Contract.project_id == project_id).options(joinedload(models.Contract.versions)).offset(skip).limit(limit).all()
     for c in contracts:
         print(f"DEBUG API: Contract {c.id} versions: {len(c.versions)} count_prop: {c.version_count}")
     return contracts

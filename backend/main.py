@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base
-from .routers import contracts, versions, diffs, logs
+from .routers import projects, contracts, versions, diffs, logs, comments
 
 Base.metadata.create_all(bind=engine)
 
@@ -15,10 +15,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(projects.router)
 app.include_router(contracts.router)
 app.include_router(versions.router)
 app.include_router(diffs.router)
 app.include_router(logs.router)
+app.include_router(comments.router)
 
 @app.get("/")
 def read_root():

@@ -6,10 +6,12 @@ import { DiffContent, Analysis } from "@/lib/types"
 import { getDiff, getAnalysis, getVersion } from "@/lib/api"
 import { DiffViewer } from "@/components/DiffViewer"
 import { InlineDiffViewer } from "@/components/InlineDiffViewer"
+import { CommentPanel } from "@/components/CommentPanel"
 import { HighFidelityViewer } from "@/components/HighFidelityViewer"
+import { FloatingRemarkButton } from "@/components/FloatingRemarkButton"
 import { AISummaryCard } from "@/components/AISummaryCard"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Sparkles, AlertTriangle, CheckCircle, ExternalLink, Loader2, ArrowRight } from "lucide-react"
+import { ArrowLeft, Sparkles, AlertTriangle, CheckCircle, ExternalLink, Loader2, ArrowRight, MessageSquare } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Version } from "@/lib/types"
@@ -32,6 +34,43 @@ export default function ArbitraryDiffPage() {
     const [targetVersion, setTargetVersion] = useState<Version | null>(null)
     const [baseVersion, setBaseVersion] = useState<Version | null>(null)
     const [activeDiffIndex, setActiveDiffIndex] = useState<number>(-1)
+    const [selectedChunkIds, setSelectedChunkIds] = useState<string[]>([])
+    const [selectedQuote, setSelectedQuote] = useState<string | null>(null)
+    const [showComments, setShowComments] = useState(true)
+
+    const [buttonPosition, setButtonPosition] = useState<{ x: number, y: number } | undefined>(undefined)
+
+    const handleChunkClick = (chunkId: string, content: string, e?: React.MouseEvent | MouseEvent) => {
+        if (e && (e.metaKey || e.ctrlKey || e.shiftKey)) {
+            // Multi-select mode
+            setSelectedChunkIds(prev => {
+                if (prev.includes(chunkId)) {
+                    return prev.filter(id => id !== chunkId)
+                } else {
+                    return [...prev, chunkId]
+                }
+            })
+        } else {
+            // Single select mode
+            setSelectedChunkIds([chunkId])
+        }
+
+        // Update quote only if it's a single selection or the latest one
+        setSelectedQuote(content)
+
+        // Calculate button position
+        if (e) {
+            // Position the button near the click, slightly offset
+            setButtonPosition({ x: e.clientX + 20, y: e.clientY - 40 })
+        }
+
+        // Don't auto-open comments on multi-select to avoid jumping, 
+        // unless it's the first one or user explicitly wants to add remark.
+        // Actually, let's keep it open if it was open.
+        if (!showComments && !e?.shiftKey && !e?.metaKey && !e?.ctrlKey) {
+            // setShowComments(true) // Disable auto-open for now to prefer floating button
+        }
+    }
 
     const changeIndices = diffs.map((d, i) => (d.type as string) !== 'unchanged' ? i : -1).filter(i => i !== -1)
 
@@ -60,6 +99,24 @@ export default function ArbitraryDiffPage() {
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [view, diffs, changeIndices])
+
+    const [comments, setComments] = useState<any[]>([]) // Use 'any' or 'Comment' type if imported
+
+    const fetchComments = async () => {
+        if (!targetVersion) return
+        try {
+            const data = await import("@/lib/api").then(m => m.getComments(contractId, targetVersion.id))
+            setComments(data)
+        } catch (error) {
+            console.error("Failed to fetch comments:", error)
+        }
+    }
+
+    useEffect(() => {
+        if (targetVersion) {
+            fetchComments()
+        }
+    }, [targetVersion])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -155,8 +212,6 @@ export default function ArbitraryDiffPage() {
         )
     }
 
-
-
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header */}
@@ -173,6 +228,16 @@ export default function ArbitraryDiffPage() {
                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Target: v{targetVersion?.version_number}</Badge>
                         </div>
                     </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant={showComments ? "secondary" : "outline"}
+                        size="sm"
+                        onClick={() => setShowComments(!showComments)}
+                    >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        {showComments ? "隐藏备注" : "显示备注"}
+                    </Button>
                 </div>
 
                 {/* View Switcher */}
@@ -279,6 +344,8 @@ export default function ArbitraryDiffPage() {
                                         className="border-none shadow-none min-h-full"
                                         activeDiffIndex={activeDiffIndex}
                                         onDiffClick={setActiveDiffIndex}
+                                        onChunkClick={handleChunkClick}
+                                        selectedChunkIds={selectedChunkIds}
                                     />
                                 ) : (
                                     <div className="p-8 text-center text-slate-500">Base version has no HTML content.</div>
@@ -300,6 +367,9 @@ export default function ArbitraryDiffPage() {
                                         className="border-none shadow-none min-h-full"
                                         activeDiffIndex={activeDiffIndex}
                                         onDiffClick={setActiveDiffIndex}
+                                        onChunkClick={handleChunkClick}
+                                        selectedChunkIds={selectedChunkIds}
+                                        comments={comments}
                                     />
                                 ) : (
                                     <div className="p-8 text-center text-slate-500">Target version has no HTML content.</div>
@@ -308,23 +378,54 @@ export default function ArbitraryDiffPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full flex flex-col overflow-auto">
+                    <div className="h-full flex flex-col overflow-auto flex-1"> {/* Added flex-1 */}
                         {targetVersion?.html_content ? (
                             <HighFidelityViewer
                                 htmlContent={targetVersion.html_content}
                                 diffs={diffs}
                                 variant="inline"
-                                className="max-w-4xl mx-auto w-full"
+                                className="w-full" // Removed max-w-4xl mx-auto
+                                onChunkClick={handleChunkClick}
+                                selectedChunkIds={selectedChunkIds}
+                                comments={comments}
+                                showMarginComments={!showComments} // Toggle based on sidebar
                             />
                         ) : (
                             <div className="flex flex-col items-center justify-center py-12 text-slate-500">
                                 <p>该版本未生成 HTML 预览，显示结构化对比：</p>
-                                <InlineDiffViewer diffs={diffs} />
+                                <InlineDiffViewer
+                                    diffs={diffs}
+                                    onChunkClick={handleChunkClick}
+                                    selectedChunkIds={selectedChunkIds}
+                                />
                             </div>
                         )}
                     </div>
                 )}
+
             </main>
+
+            {/* Comment Sidebar - Fixed Position */}
+            {showComments && (
+                <div className="fixed right-0 top-[73px] bottom-0 z-40 bg-white shadow-xl border-l animate-in slide-in-from-right duration-200">
+                    <CommentPanel
+                        contractId={contractId}
+                        versionId={targetVersion?.id}
+                        selectedElementIds={selectedChunkIds}
+                        selectedQuote={selectedQuote}
+                        comments={comments}
+                        onCommentsChange={fetchComments}
+                        onClose={() => setShowComments(false)}
+                    />
+                </div>
+            )}
+
+            {/* Floating Remark Button */}
+            <FloatingRemarkButton
+                visible={selectedChunkIds.length > 0 && !showComments}
+                onClick={() => setShowComments(true)}
+                position={buttonPosition}
+            />
         </div>
     )
 }

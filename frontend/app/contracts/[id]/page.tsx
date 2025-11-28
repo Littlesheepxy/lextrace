@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Upload, GitBranch } from "lucide-react"
 import Link from "next/link"
 import { VersionTimeline } from "@/components/VersionTimeline"
-import { FileUploadDialog } from "@/components/FileUploadDialog"
+import { UploadDialog } from "@/components/UploadDialog"
 import { VersionComparisonPanel } from "@/components/VersionComparisonPanel"
 
 export default function ContractDetailPage() {
@@ -75,22 +75,13 @@ export default function ContractDetailPage() {
                         </p>
                     </div>
                 </div>
-                <FileUploadDialog
-                    title="上传新版本"
-                    onSubmit={handleUpload}
-                    trigger={
-                        <Button>
-                            <Upload className="mr-2 h-4 w-4" />
-                            上传新版本
-                        </Button>
-                    }
-                />
+                <UploadDialog contractId={id} onUploadSuccess={loadData} />
             </div>
 
 
             <div className="flex-1 min-h-0 overflow-hidden flex flex-col gap-6">
                 <div className="flex-1 overflow-y-auto">
-                    <VersionTimeline versions={versions} contractId={id} />
+                    <VersionTimeline versions={versions} contractId={id} onDelete={loadData} /> {/* Keep VersionTimeline */}
                 </div>
                 <div className="flex-shrink-0 pt-2 border-t">
                     <VersionComparisonPanel versions={versions} contractId={id} />

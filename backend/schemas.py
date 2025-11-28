@@ -2,8 +2,23 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List, Optional
 
+class ProjectBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class ProjectCreate(ProjectBase):
+    pass
+
+class Project(ProjectBase):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
 class ContractBase(BaseModel):
     name: str
+    project_id: int
 
 class ContractCreate(ContractBase):
     pass
@@ -34,9 +49,22 @@ class Version(VersionBase):
     class Config:
         from_attributes = True
 
+class DiffItem(BaseModel):
+    clause_id: str
+    type: str # 'added', 'deleted', 'modified', 'unchanged'
+    change_type: str # 'renumbered', 'renamed', 'modified', 'moved', 'unchanged', 'added', 'deleted'
+    original: Optional[str]
+    modified: Optional[str]
+    similarity: float
+    old_number: Optional[str] = None
+    new_number: Optional[str] = None
+    old_title: Optional[str] = None
+    new_title: Optional[str] = None
+    indent: int = 0
+
 class DiffResponse(BaseModel):
     id: int
-    content: str # JSON
+    content: str # JSON string of List[DiffItem]
     summary: str
     
     class Config:
@@ -56,5 +84,28 @@ class OperationLog(BaseModel):
     details: str
     created_at: datetime
 
+    class Config:
+        from_attributes = True
+
+class BatchCommitFile(BaseModel):
+    file_id: str
+    original_filename: str
+    detected_date: Optional[str] = None
+    commit_message: Optional[str] = None
+
+class CommentBase(BaseModel):
+    element_id: str
+    quote: Optional[str] = None
+    content: str
+
+class CommentCreate(CommentBase):
+    pass
+
+class Comment(CommentBase):
+    id: int
+    contract_id: int
+    version_id: int
+    created_at: datetime
+    
     class Config:
         from_attributes = True
