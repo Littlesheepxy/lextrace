@@ -13,7 +13,19 @@ OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL = "google/gemini-2.0-flash-001"
 
 client = None
-if OPENROUTER_API_KEY:
+# 检查 API Key 是否有效（非空、非占位符、仅包含 ASCII 字符）
+def _is_valid_api_key(key: str) -> bool:
+    if not key:
+        return False
+    if '你的' in key or 'your_' in key.lower() or key == 'sk-xxx':
+        return False
+    try:
+        key.encode('ascii')
+        return True
+    except UnicodeEncodeError:
+        return False
+
+if _is_valid_api_key(OPENROUTER_API_KEY):
     client = OpenAI(
         base_url=OPENROUTER_BASE_URL,
         api_key=OPENROUTER_API_KEY,
@@ -180,7 +192,7 @@ def _generate_fallback_summary(version_changes: List[Dict[str, Any]]) -> Dict[st
     total_versions = len(version_changes)
     modified_count = sum(
         1 for vc in version_changes 
-        if vc.get('changeFromPrev', {}).get('type') == 'modified'
+        if (vc.get('changeFromPrev') or {}).get('type') == 'modified'
     )
     
     if modified_count == 0:
