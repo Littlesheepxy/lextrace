@@ -66,3 +66,67 @@ export interface Comment {
     content: string;
     created_at: string;
 }
+
+// 条款树节点
+export interface ClauseNode {
+    id: string;
+    number: string;
+    title: string;
+    level: number;
+    children?: ClauseNode[];
+    hasChanges: boolean;
+    changeType?: 'added' | 'deleted' | 'modified' | 'renumbered' | 'unchanged';
+    riskLevel?: RiskLevel;
+    versionCount: number;
+}
+
+// 风险等级
+export type RiskLevel = 'high' | 'medium' | 'low' | 'none';
+
+// 条款版本状态
+export interface ClauseVersionState {
+    versionId: number;
+    versionNumber: number;
+    createdAt: string;
+    status: 'exists' | 'not_exists' | 'unchanged';
+    content: string | null;
+    preview: string;
+    changeFromPrev?: {
+        type: 'added' | 'deleted' | 'modified' | 'renumbered' | 'unchanged';
+        summary: string;
+        diffHtml?: string;
+    };
+}
+
+// 条款多版本历史
+export interface ClauseHistory {
+    clauseId: string;
+    clausePath: string[];
+    versionStates: ClauseVersionState[];
+    aiSummary?: {
+        oneLiner: string;
+        evolutionSummary: string;
+        riskNotes?: string;
+    };
+}
+
+// 审查状态类型
+export type ReviewStatusType = 'confirmed' | 'risky' | 'needs_discussion' | 'pending';
+
+// 条款审查状态
+export interface ClauseReviewStatus {
+    clauseId: string;
+    contractId: number;
+    versionId?: number;
+    status: ReviewStatusType;
+    notes: string;
+    updatedAt: string;
+    updatedBy?: string;
+}
+
+// 版本过滤器
+export interface VersionFilter {
+    fromVersion?: number;
+    toVersion?: number;
+    onlyWithChanges?: boolean;
+}

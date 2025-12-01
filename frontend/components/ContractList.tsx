@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Plus, FileText, Clock, ChevronRight, AlertTriangle, Loader2, Trash2 } from "lucide-react"
+import { Plus, FileText, Clock, ChevronRight, AlertTriangle, Loader2, Trash2, ClipboardCheck } from "lucide-react"
 import { Contract } from "@/lib/types"
 import { createContract, deleteContract, getContracts } from "@/lib/api"
 import { useRouter } from "next/navigation"
@@ -113,7 +113,19 @@ export function ContractList({ projectId }: { projectId: number }) {
                             </div>
                         </CardContent>
 
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    router.push(`/contracts/${contract.id}/review`)
+                                }}
+                                title="条款审查"
+                            >
+                                <ClipboardCheck className="h-4 w-4" />
+                            </Button>
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -122,6 +134,7 @@ export function ContractList({ projectId }: { projectId: number }) {
                                     e.stopPropagation()
                                     setContractToDelete(contract.id)
                                 }}
+                                title="删除合同"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>

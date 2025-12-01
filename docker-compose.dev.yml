@@ -1,0 +1,43 @@
+# ============================================
+# LawTrace 本地开发用 Docker Compose
+# 用法: docker-compose -f docker-compose.dev.yml up
+# ============================================
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lawtrace-backend-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app          # 挂载代码，支持热重载
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:///./data/lextrace.db
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: lawtrace-frontend-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules       # 排除 node_modules
+      - /app/.next              # 排除 .next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+

@@ -82,7 +82,7 @@ export function CommentPanel({ contractId, versionId, selectedElementIds = [], s
                             )}>
                                 <div className="flex justify-between items-start mb-2">
                                     <span className="text-xs text-slate-400">
-                                        {format(new Date(comment.created_at), "yyyy-MM-dd HH:mm", { locale: zhCN })}
+                                        {format(new Date(comment.created_at.endsWith('Z') ? comment.created_at : `${comment.created_at}Z`), "yyyy-MM-dd HH:mm", { locale: zhCN })}
                                     </span>
                                     <Button
                                         variant="ghost"

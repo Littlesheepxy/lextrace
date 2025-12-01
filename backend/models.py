@@ -35,7 +35,6 @@ class Version(Base):
     contract_id = Column(Integer, ForeignKey("contracts.id"))
     version_number = Column(Integer)
     file_path = Column(String)
-    file_path = Column(String)
     commit_message = Column(String)
     html_content = Column(Text) # High-fidelity HTML from mammoth
     created_at = Column(DateTime, default=datetime.utcnow)

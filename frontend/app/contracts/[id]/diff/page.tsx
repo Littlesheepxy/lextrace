@@ -410,7 +410,7 @@ export default function ArbitraryDiffPage() {
                 <div className="fixed right-0 top-[73px] bottom-0 z-40 bg-white shadow-xl border-l animate-in slide-in-from-right duration-200">
                     <CommentPanel
                         contractId={contractId}
-                        versionId={targetVersion?.id}
+                        versionId={targetVersion?.id ?? 0}
                         selectedElementIds={selectedChunkIds}
                         selectedQuote={selectedQuote}
                         comments={comments}

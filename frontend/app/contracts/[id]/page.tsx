@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import { Contract, Version } from "@/lib/types"
 import { getContract, getVersions, uploadVersion } from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Upload, GitBranch } from "lucide-react"
+import { ArrowLeft, Upload, GitBranch, ClipboardCheck } from "lucide-react"
 import Link from "next/link"
 import { VersionTimeline } from "@/components/VersionTimeline"
 import { UploadDialog } from "@/components/UploadDialog"
@@ -75,7 +75,19 @@ export default function ContractDetailPage() {
                         </p>
                     </div>
                 </div>
-                <UploadDialog contractId={id} onUploadSuccess={loadData} />
+                <div className="flex items-center gap-3">
+                    <Button 
+                        variant="outline" 
+                        asChild
+                        className="gap-2 border-amber-200 text-amber-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300"
+                    >
+                        <Link href={`/contracts/${id}/review`}>
+                            <ClipboardCheck className="h-4 w-4" />
+                            条款审查
+                        </Link>
+                    </Button>
+                    <UploadDialog contractId={id} onUploadSuccess={loadData} />
+                </div>
             </div>
 
 

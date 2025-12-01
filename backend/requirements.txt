@@ -5,3 +5,4 @@ python-multipart
 python-docx
 openai
 python-dotenv
+psycopg2-binary
