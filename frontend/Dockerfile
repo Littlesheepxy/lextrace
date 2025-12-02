@@ -22,7 +22,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # 构建时需要的环境变量
-ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+# 生产环境默认使用 /api（通过 nginx 代理）
+ARG NEXT_PUBLIC_API_URL=/api
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 

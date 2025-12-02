@@ -2,14 +2,32 @@ import { Project, Contract, ClauseNode, ClauseHistory, ClauseReviewStatus, Versi
 
 const IS_SERVER = typeof window === 'undefined';
 
-// 生产环境 API 地址（通过同域代理避免跨域）
-const PRODUCTION_API_URL = '/api';
+// 判断是否为开发环境
+const IS_DEV = process.env.NODE_ENV === 'development';
 
-// 开发环境或服务端渲染使用的地址
-const DEV_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// 获取 API 基础地址
+function getApiBaseUrl(): string {
+    // 浏览器端
+    if (!IS_SERVER) {
+        // 开发环境：允许使用环境变量指定的地址（如 http://localhost:8000）
+        if (IS_DEV && process.env.NEXT_PUBLIC_API_URL) {
+            return process.env.NEXT_PUBLIC_API_URL;
+        }
+        // 生产环境：始终使用相对路径 /api，通过 nginx 代理
+        return '/api';
+    }
+    
+    // 服务端渲染：使用环境变量或默认值
+    // 注意：如果 NEXT_PUBLIC_API_URL 是相对路径如 /api，SSR 时需要完整 URL
+    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    if (envUrl.startsWith('/')) {
+        // 相对路径在 SSR 时无法使用，回退到 localhost
+        return 'http://localhost:8000';
+    }
+    return envUrl || 'http://localhost:8000';
+}
 
-// 浏览器端使用相对路径 /api，服务端使用完整地址
-const API_BASE_URL = IS_SERVER ? DEV_API_URL : PRODUCTION_API_URL;
+const API_BASE_URL = getApiBaseUrl();
 
 // Projects
 export async function getProjects(): Promise<Project[]> {
