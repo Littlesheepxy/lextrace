@@ -33,6 +33,9 @@ ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 # 禁用 telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# 确保 public 目录存在（即使项目中没有）
+RUN mkdir -p public
+
 # 构建应用
 RUN npm run build
 
@@ -50,11 +53,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# 复制必要文件
+# 复制 public 目录
 COPY --from=builder /app/public ./public
 
 # 设置正确的权限
-RUN mkdir .next && chown nextjs:nodejs .next
+RUN mkdir -p .next && chown -R nextjs:nodejs .next public
 
 # 复制构建产物（使用 standalone 模式更优，但需要配置）
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
