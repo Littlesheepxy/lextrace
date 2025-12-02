@@ -7,11 +7,14 @@ FROM python:3.9-slim as builder
 
 WORKDIR /app
 
-# 安装构建依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 安装构建依赖（添加重试机制处理网络问题）
+RUN for i in 1 2 3; do \
+        apt-get update && break || sleep 5; \
+    done && \
+    apt-get install -y --no-install-recommends \
     build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # 复制依赖文件
 COPY requirements.txt .
@@ -29,11 +32,13 @@ FROM python:3.9-slim as production
 
 WORKDIR /app
 
-# 安装运行时依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+# 安装运行时依赖（添加重试机制处理网络问题）
+RUN for i in 1 2 3; do \
+        apt-get update && break || sleep 5; \
+    done && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
 
 # 从 builder 复制虚拟环境
 COPY --from=builder /opt/venv /opt/venv
