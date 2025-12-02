@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .. import models, schemas, database
+import models, schemas, database
 import json
 
 router = APIRouter(
@@ -36,7 +36,7 @@ def get_diff(contract_id: int, version_id: int, compare_with: int = None, db: Se
 
     # Generate Diff
     try:
-        from ..lib.diff_engine import compare_versions
+        from lib.diff_engine import compare_versions
         
         raw_diffs = compare_versions(previous_version.file_path, version.file_path)
         
@@ -101,8 +101,8 @@ def get_analysis(contract_id: int, version_id: int, compare_with: int = None, db
 
     # Generate Analysis
     try:
-        from ..lib.diff_engine import compare_versions
-        from ..lib.ai_engine import analyze_diffs
+        from lib.diff_engine import compare_versions
+        from lib.ai_engine import analyze_diffs
         
         raw_diffs = compare_versions(previous_version.file_path, version.file_path)
         ai_result = analyze_diffs(raw_diffs)

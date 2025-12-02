@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
-from .. import models, database
-from ..lib.doc_parser import extract_clauses
-from ..lib.smart_diff import calculate_similarity
-from ..lib.ai_engine import analyze_clause_evolution
+import models, database
+from lib.doc_parser import extract_clauses
+from lib.smart_diff import calculate_similarity
+from lib.ai_engine import analyze_clause_evolution
 import json
 
 router = APIRouter(

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List
-from .. import models, schemas, database
+import models, schemas, database
 import shutil
 import os
 
@@ -35,7 +35,7 @@ def create_version(
         shutil.copyfileobj(file.file, buffer)
 
     # Generate HTML using custom renderer
-    from ..lib.html_renderer import render_document_to_html
+    from lib.html_renderer import render_document_to_html
     
     try:
         html_content = render_document_to_html(file_path)
@@ -129,7 +129,7 @@ def stage_batch_versions(
 
     staged_files = []
     
-    from ..lib.date_extractor import extract_date_from_docx
+    from lib.date_extractor import extract_date_from_docx
     import uuid
 
     for file in files:
@@ -172,7 +172,7 @@ def commit_batch_versions(
 
     created_versions = []
     
-    from ..lib.html_renderer import render_document_to_html
+    from lib.html_renderer import render_document_to_html
     from datetime import datetime, timezone
 
     for file_data in files:

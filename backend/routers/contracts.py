@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
 from sqlalchemy.orm import Session, joinedload
 from typing import List
-from .. import models, schemas, database
-from ..database import get_db # Assuming get_db is imported directly for the new endpoints
+import models, schemas, database
+from database import get_db
 
 router = APIRouter(
     prefix="/contracts",

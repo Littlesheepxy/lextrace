@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
-from .doc_parser import extract_clauses
-from .smart_diff import match_clauses
+from lib.doc_parser import extract_clauses
+from lib.smart_diff import match_clauses
 
 def compare_versions(old_file_path: str, new_file_path: str) -> List[Dict[str, Any]]:
     """
