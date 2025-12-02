@@ -1,9 +1,15 @@
 import { Project, Contract, ClauseNode, ClauseHistory, ClauseReviewStatus, VersionFilter, Version } from './types';
 
 const IS_SERVER = typeof window === 'undefined';
-const API_BASE_URL = IS_SERVER
-    ? (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+
+// 生产环境 API 地址（通过同域代理避免跨域）
+const PRODUCTION_API_URL = '/api';
+
+// 开发环境或服务端渲染使用的地址
+const DEV_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// 浏览器端使用相对路径 /api，服务端使用完整地址
+const API_BASE_URL = IS_SERVER ? DEV_API_URL : PRODUCTION_API_URL;
 
 // Projects
 export async function getProjects(): Promise<Project[]> {
