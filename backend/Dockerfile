@@ -7,10 +7,12 @@ FROM python:3.9-slim as builder
 
 WORKDIR /app
 
-# 安装构建依赖（添加重试机制处理网络问题）
-RUN for i in 1 2 3; do \
-        apt-get update && break || sleep 5; \
-    done && \
+# 替换为阿里云镜像源（解决国内网络问题）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list 2>/dev/null || true
+
+# 安装构建依赖
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     curl && \
@@ -32,10 +34,12 @@ FROM python:3.9-slim as production
 
 WORKDIR /app
 
-# 安装运行时依赖（添加重试机制处理网络问题）
-RUN for i in 1 2 3; do \
-        apt-get update && break || sleep 5; \
-    done && \
+# 替换为阿里云镜像源（解决国内网络问题）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources 2>/dev/null || \
+    sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list 2>/dev/null || true
+
+# 安装运行时依赖
+RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
